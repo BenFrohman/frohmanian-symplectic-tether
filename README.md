@@ -5,7 +5,7 @@
 
 This repo has **two separate results**. Keep them apart.
 
-**Status summary.** *Proved* (kernel-checked, standard axioms only; full per-theorem list in `AXIOMS.md`): the tether algebra of Result 1 (degeneracy, uniqueness, Route A κ = S, metriplectic split, 9-term Jacobi expansion) and the L²/H¹ estimates of Result 2 for the damped model. *Conditional on*: the named `Prop` inputs in the Result 2 table below (`CurlRightInverse` in the general case, `TetheredEnstrophyIdentity`, `StrainL2Bound`, `TetheredH1Identity`, `NonlinH1Bound`, `H1ToHsBootstrap`, `StretchingByStrain`, `BKMLogInequality`, `BKMContinuation`, `LocalContinuation`); global regularity is proved **only for the modified damped system and only given these inputs**. *Open*: regularity of unmodified Navier–Stokes, and the items listed under "Open in Result 1". Nothing here has been peer reviewed.
+**Status summary.** *Proved* (kernel-checked, standard axioms only; full per-theorem list in `AXIOMS.md`): the tether algebra of Result 1 (degeneracy, uniqueness, Route A κ = S, metriplectic split, 9-term Jacobi expansion; Jacobi itself is **not** proved, it holds iff the mixed terms cancel) and the L²/H¹ estimates of Result 2 for the damped model. *Conditional on*: the named `Prop` inputs in the Result 2 table below (`CurlRightInverse` in the general case, `TetheredEnstrophyIdentity`, `StrainL2Bound`, `TetheredH1Identity`, `NonlinH1Bound`, `H1ToHsBootstrap`, `StretchingByStrain`, `BKMLogInequality`, `BKMContinuation`, `LocalContinuation`); global regularity is proved **only for the modified damped system and only given these inputs**. *Open*: regularity of unmodified Navier–Stokes, and the items listed under "Open in Result 1". Nothing here has been peer reviewed.
 
 | | Result 1: the original tether | Result 2: the damped model |
 |---|---|---|
@@ -86,7 +86,9 @@ Dates come from the author's own drafts and file metadata; the drafts themselves
 | Living document, axioms (A1)–(A5) | last modified Jun 26 2026 |
 | First `Tether.lean` (`projectionOrthogonalToU` was `sorry`) | May 31 2026 |
 
-κ: κ = 1 was the May teaching placeholder; 3/2 came in Aug 26 2026. Here κ is free (Route A sets κ = S). History: `docs/timeline.md`.
+κ: κ = 1 was the May teaching placeholder; 3/2 came in Aug 26 2026. Both are **modelling / normalization choices**, not derived or sourced constants. Here κ is free (Route A sets κ = S, with S supplied, not derived). History: `docs/timeline.md`.
+
+**Naming and related code:** see [`NAMING.md`](NAMING.md). The open statement is the *Frohmanian Tether Hypothesis* (A)/(B); nothing here proves it, and no open piece is called a "Law" or "Theorem". In the older `frohmanian-symplectic-tether-regularity` repository, `tethered_jacobi_identity_conditional` assumes Jacobi as a hypothesis (not proved), C2 for the ψ-slot `TetherKernel` is shown **false** in Lean on a two-mode shear (`a52c6af`), and the velocity-slot `TetherKernelVel` is the model that satisfies C2.
 
 ## Build and count
 `lake exe cache get && lake build && lake env lean AxiomReport.lean` (full per-theorem output in `AXIOMS.md`; `scripts/Axioms.lean` prints the headline theorems).
@@ -105,4 +107,4 @@ Copyright 2026 Benjamin Stanley Frohman (ORCID [0009-0006-7068-3718](https://orc
 What is proved vs. conditional: Proved results and their hypotheses are listed in the sections above. The cubically damped model is a modified system, not unmodified Navier–Stokes. Every hypothesis is a named `Prop` passed as an explicit argument. Nothing in this repository claims to solve the Clay Millennium problem or global regularity for unmodified 3D Navier–Stokes.
 
 
-**PDF note:** the PDF in `paper/` predates the 2026-11-01 revision of the `.tex` source (no TeX toolchain was available when this revision was made). The `.tex` file is authoritative; rebuild the PDF from it.
+**PDF note:** the PDFs were rebuilt from the `.tex` sources with Tectonic 0.17.0 on 2026-11-02.
