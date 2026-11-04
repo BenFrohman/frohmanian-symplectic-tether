@@ -112,3 +112,7 @@ What is proved vs. conditional: Proved results and their hypotheses are listed i
 
 
 **PDF note:** the PDFs were rebuilt from the `.tex` sources with Tectonic 0.17.0 on 2026-11-02.
+
+## Verification certificate
+
+See [CERTIFICATE.md](CERTIFICATE.md) and the paper in `paper/companion.pdf`.
