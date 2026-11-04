@@ -116,3 +116,10 @@ What is proved vs. conditional: Proved results and their hypotheses are listed i
 ## Verification certificate
 
 See [CERTIFICATE.md](CERTIFICATE.md) and the paper in `paper/companion.pdf`.
+
+
+## Zenodo: companion
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23942464.svg)](https://doi.org/10.5281/zenodo.23942464)
+
+The paper `paper/companion.pdf` is archived on Zenodo as https://doi.org/10.5281/zenodo.23942464.
