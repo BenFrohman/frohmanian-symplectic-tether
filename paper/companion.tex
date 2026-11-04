@@ -1,7 +1,15 @@
 % Copyright 2026 Benjamin Stanley Frohman (ORCID 0009-0006-7068-3718). Apache License 2.0.
 \documentclass[11pt]{article}
-\usepackage{amsmath,amssymb,amsthm,mathrsfs,hyperref,geometry,booktabs}
-\geometry{margin=1in}
+\usepackage{amsmath,amssymb,amsthm,mathrsfs,mathtools}
+\usepackage[margin=1.1in]{geometry}
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+\usepackage{booktabs,longtable,array}
+\usepackage{xurl}
+\input{leanlisting}
+\usepackage[colorlinks,linkcolor=leankw,citecolor=leankw,urlcolor=leankw]{hyperref}
+\emergencystretch=2em
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{proposition}[theorem]{Proposition}
@@ -13,17 +21,16 @@
 \newtheorem{remark}[theorem]{Remark}
 \newcommand{\T}{\mathfrak{T}_F}
 \newcommand{\ip}[2]{\langle #1,#2\rangle}
-\newcommand{\lean}[1]{\texttt{\detokenize{#1}}}
-\newcommand{\LeanRef}[1]{\par\noindent\emph{Lean:} \lean{#1}.\par}
+\newcommand{\lean}[1]{{\upshape\path{#1}}}
+\newcommand{\st}[1]{{\upshape\textsf{#1}}}
+\newcommand{\LeanRef}[1]{\par\noindent{\raggedright\small\emph{Lean:} #1.\par}}
 \title{The Frohmanian Symplectic Tether $\T$:\\ Written Proofs Companion to the Lean~4 Formalization}
-\author{Benjamin Stanley Frohman\\ \small\href{mailto:frohmanbenjamin@gmail.com}{frohmanbenjamin@gmail.com}\\ \small\href{mailto:frohmanbenjamin@gmail.com}{frohmanbenjamin@gmail.com}\\ \small ORCID \href{https://orcid.org/0009-0006-7068-3718}{0009-0006-7068-3718}}
+\author{Benjamin Stanley Frohman\\ \small\href{mailto:frohmanbenjamin@gmail.com}{frohmanbenjamin@gmail.com}\\ \small ORCID \href{https://orcid.org/0009-0006-7068-3718}{0009-0006-7068-3718}}
 \date{October 29, 2026; revised November 1, 2026. Not peer reviewed.}
-\usepackage{longtable}
-\usepackage{url}
 \begin{document}
 \maketitle
 \begin{abstract}
-\noindent\textbf{DOI:} \texttt{10.5281/zenodo.23942464}\par\smallskip
+\noindent\textbf{DOI:} \href{https://doi.org/10.5281/zenodo.23942464}{10.5281/zenodo.23942464}\par\smallskip
 
 This is a sibling paper to the Lean~4 repository \texttt{frohmanian-symplectic-tether}.
 Each result is given a written proof and cross-referenced to the Lean declaration that
@@ -36,11 +43,20 @@ smoothness, \emph{conditional on cited propositions that are listed explicitly}.
 \textbf{None of this resolves the Clay Millennium problem.} Plain Navier--Stokes is unchanged
 (Section~\ref{sec:open}).
 \emph{Build status:} \texttt{lake build} of the full \texttt{TetherMayForm} library succeeds, and the axiom report
-(\texttt{AxiomAudit.lean}, run in CI; see the final appendix) checks 308 theorem declarations, none using \texttt{sorryAx}
-and none using an axiom beyond \texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}. ``Proved'' below
+(\texttt{AxiomAudit.lean}, run in CI; see the final appendix) checks 308 named theorem declarations, and the
+full report (\texttt{AxiomReport.lean}) covers all 382 theorems of the library; none uses \texttt{sorryAx}
+and none uses an axiom beyond \texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}. ``Proved'' below
 means kernel-checked in that sense; ``conditional'' means the result takes a named \texttt{Prop} hypothesis
-that is not proved here.
+that is not proved here; ``model only'' means the result concerns the modified (tethered) system,
+not plain Navier--Stokes.
 \end{abstract}
+
+\paragraph{Status legend.} Every result below carries one of three labels.
+\st{Proved}: kernel-checked in Lean with standard axioms only.
+\st{Conditional}: the Lean statement takes a named cited proposition (a \texttt{Prop} hypothesis) that is not proved here.
+\st{Model only}: the result is about the tethered system~\eqref{eq:tv}, not about plain Navier--Stokes.
+The open statement of the programme is the Frohmanian Tether Hypothesis~(A)/(B); it is not proved here,
+and the Clay Millennium problem remains open.
 
 \section{Physical motivation}\label{sec:motivation}
 The starting picture is physical. The vortex-stretching term $(\omega\cdot\nabla)u$ behaves as if
@@ -55,7 +71,7 @@ Two pictures from the author's June~22, 2026 compilation guide the derivation. B
 CE 2-cochains. Jacobi requires them to be cocycles, and $d\circ d=0$ makes coboundaries automatic
 cocycles. A \emph{symmetric} correction is not a CE cochain at all. That is why the tether is
 metriplectic and not Hamiltonian (Prop.~\ref{prop:ce}).
-\item \textbf{$T^3$ shear.} The shear $(\sin y,0,0)$ is divergence free, so it is admissible. The
+\item \textbf{$\mathbb{T}^3$ shear.} The shear $(\sin y,0,0)$ is divergence free, so it is admissible. The
 variant $(\sin x,0,0)$ is not (its divergence is $1$ at the origin). This is the
 counterexample that shows the divergence-free constraint is essential (Prop.~\ref{prop:shear}); at field level it is essential but not sufficient for Jacobi (Theorem~\ref{thm:fieldjacobi}).
 \end{itemize}
@@ -65,7 +81,7 @@ Whether real fluids carry the resulting term is \emph{not} decided here (Section
 Throughout, $H$ is a real inner-product space with $\dim H\ge 3$, $u\in H$, $u\neq0$, and
 $\Pi_u x = x-\frac{\ip{u}{x}}{\|u\|^2}u$.
 \begin{definition}
-$\T[\kappa,w,u](F,G):=-(\kappa w)\ip{\Pi_uF}{\Pi_uG}$. \LeanRef{Frohman.Tether.frohmanianTether; frohmanianTether_apply}
+$\T[\kappa,w,u](F,G):=-(\kappa w)\ip{\Pi_uF}{\Pi_uG}$. \LeanRef{\lean{Frohman.Tether.frohmanianTether; frohmanianTether_apply}}
 \end{definition}
 
 \begin{lemma}[Basic properties]
@@ -77,7 +93,7 @@ commuting with $\Pi_u$.
 (a) is symmetry of the inner product. (b) gives $-\kappa w\|\Pi_uF\|^2$. (c) holds because $\Pi_uu=0$.
 (d) If $A$ is an isometry with $A\Pi_u=\Pi_uA$, then $\ip{\Pi_uAF}{\Pi_uAG}=\ip{A\Pi_uF}{A\Pi_uG}=\ip{\Pi_uF}{\Pi_uG}$.
 \end{proof}
-\LeanRef{frohmanianTether_symm, frohmanianTether_self_nonpos, degeneracy_verification, frohmanianTether_invariant, piU_comm_isometry}
+\LeanRef{\lean{frohmanianTether_symm}, \lean{frohmanianTether_self_nonpos}, \lean{degeneracy_verification}, \lean{frohmanianTether_invariant}, \lean{piU_comm_isometry}}
 
 \begin{theorem}[Uniqueness up to scale]\label{thm:unique}
 Let $B$ be a symmetric bilinear form that is (C1) invariant under the coadjoint isometries fixing
@@ -92,7 +108,16 @@ that sends $e_0\mapsto e$, so $B(e,e)=B(e_0,e_0)$ (\lean{diag_eq_of_norm_eq}). B
 $B(x,x)=B(e_0,e_0)\|\Pi_ux\|^2$. Polarization recovers $B(x,y)=B(e_0,e_0)\ip{\Pi_ux}{\Pi_uy}$,
 that is, $B=\T[c,1,u]$ with $c=-B(e_0,e_0)$. The calibrated statement then follows from (C3).
 \end{proof}
-\LeanRef{admissible_eq_smul_frohmanianTether, uniqueness_of_minimal_metric_tether, uniqueness_of_minimal_metric_tether_iff}
+\LeanRef{\lean{admissible_eq_smul_frohmanianTether}, \lean{uniqueness_of_minimal_metric_tether}, \lean{uniqueness_of_minimal_metric_tether_iff}}
+The calibrated statement, verbatim from \lean{TetherMayForm/Basic.lean} (\st{Proved}):
+\begin{lstlisting}
+theorem uniqueness_of_minimal_metric_tether [FiniteDimensional $\mathbb{R}$ H]
+    (hdim : 3 $\le$ Module.finrank $\mathbb{R}$ H) ($\kappa$ w : $\mathbb{R}$) (u : H) (hu : u $\ne$ 0)
+    (C3 : LinearMap.BilinForm $\mathbb{R}$ H $\to$ Prop)
+    (hC3fix : $\forall$ c : $\mathbb{R}$, C3 ($\mathfrak{T}$_F[c, 1, u]) $\to$ c = $\kappa$ * w)
+    (B : LinearMap.BilinForm $\mathbb{R}$ H) (hB : IsAdmissibleCorrection u C3 B) :
+    B = $\mathfrak{T}$_F[$\kappa$, w, u]
+\end{lstlisting}
 
 \begin{theorem}[Route A determines $\kappa$]\label{thm:routeA}
 Let $\omega\perp u$, $\|\omega\|=1$, $w\neq0$. Suppose $\T[\kappa,w,u]$ matches the stretching
@@ -104,7 +129,7 @@ $B=\T[\kappa,w,u]$ with $\kappa=S$.
 Since $\omega\perp u$, $\Pi_u\omega=\omega$, so $\T(\omega,\omega)=-\kappa w\|\omega\|^2=-\kappa w$. The matching gives
 $(S-\kappa)w=0$, and $w\ne0$ yields $\kappa=S$. Here $\kappa$ is a free parameter; specific values used in earlier drafts ($\kappa=1$, $\kappa=3/2$) are modelling/normalization choices, not derived constants, and $S$ is supplied, not derived. The open statement of the programme is the Frohmanian Tether Hypothesis (A)/(B) (see \texttt{NAMING.md}); it is not proved here. The equivalence combines this with Theorem~\ref{thm:unique}.
 \end{proof}
-\LeanRef{routeA_determines_kappa, frohmanian_symplectic_tether_theorem, uniqueness_routeA_iff, frohmanianTether_routeA}
+\LeanRef{\lean{routeA_determines_kappa}, \lean{frohmanian_symplectic_tether_theorem}, \lean{uniqueness_routeA_iff}, \lean{frohmanianTether_routeA}}
 
 \begin{theorem}[Nine-term Jacobi]\label{thm:jacobi}
 For a classical (Jacobi) bracket $P$ and the tethered bracket $P+\T$, the Jacobiator expands into
@@ -120,7 +145,7 @@ second application (\lean{tetherVec_tetherVec}, \lean{jacobi_term7}--\lean{jacob
 The classical triple cancels (\lean{jacobi_classical_cancel}). Under the sufficient hypotheses each
 mixed term contains $\Pi_uP(\cdot,\cdot)=0$ or $P(u,\cdot)=0$.
 \end{proof}
-\LeanRef{jacobiator_eq_mixed, jacobi_iff_mixed_cancel, mixedTerm_eq_zero, jacobiator_eq_zero_of_central}
+\LeanRef{\lean{jacobiator_eq_mixed}, \lean{jacobi_iff_mixed_cancel}, \lean{mixedTerm_eq_zero}, \lean{jacobiator_eq_zero_of_central}}
 
 \begin{theorem}[Metriplectic split]
 Every bilinear form splits uniquely into symmetric and antisymmetric parts. $\T$ is purely symmetric,
@@ -131,7 +156,7 @@ $\{E,E\}=0$ and $\T(F,\nabla E)=0$.
 $B=\tfrac12(B+B^\top)+\tfrac12(B-B^\top)$. Uniqueness holds because a form that is both symmetric
 and antisymmetric is zero. Energy conservation follows from $P(F,F)=0$ and degeneracy.
 \end{proof}
-\LeanRef{split_unique, symPart_frohmanianTether, antiPart_frohmanianTether, metriplecticBracket_split, metriplectic_energy_conserved}
+\LeanRef{\lean{split_unique}, \lean{symPart_frohmanianTether}, \lean{antiPart_frohmanianTether}, \lean{metriplecticBracket_split}, \lean{metriplectic_energy_conserved}}
 
 \begin{proposition}[Chevalley--Eilenberg]\label{prop:ce}
 (a) $d_2\circ d_1=0$ on 1-cochains of any Lie algebra. (b) Coboundaries are cocycles.
@@ -142,16 +167,16 @@ symmetric correction such as $\T$ is never a CE 2-cochain.
 (a) $d_2(d_1f)(x,y,z)$ is $-f$ applied to the Jacobi sum $[x,[y,z]]+[y,[z,x]]+[z,[x,y]]=0$.
 (b) follows from (a). (c) $s(x,y)=s(y,x)$ and $s(x,y)=-s(y,x)$ give $2s=0$.
 \end{proof}
-\LeanRef{d2_d1, cocycle_of_coboundary, antiCorr_cocycle_iff, symPart_not_cochain}
+\LeanRef{\lean{d2_d1}, \lean{cocycle_of_coboundary}, \lean{antiCorr_cocycle_iff}, \lean{symPart_not_cochain}}
 
-\begin{proposition}[$T^3$ shear]\label{prop:shear}
+\begin{proposition}[$\mathbb{T}^3$ shear]\label{prop:shear}
 $\mathrm{div}(\sin y,0,0)\equiv0$, whereas $\mathrm{div}(\sin x,0,0)=\cos x$, which equals $1$ at the origin.
 \end{proposition}
-\LeanRef{shear_divFree, shearBad_div, shearBad_not_divFree}
+\LeanRef{\lean{shear_divFree}, \lean{shearBad_div}, \lean{shearBad_not_divFree}}
 
 \subsection{Field-level Jacobi test for the two shears}\label{sec:fieldjacobi}
 The algebra above is finite-dimensional, so divergence-freeness never enters it. To let it enter,
-we work on trigonometric-polynomial vector fields on $T^3$, written as finite Fourier sums
+we work on trigonometric-polynomial vector fields on $\mathbb{T}^3$, written as finite Fourier sums
 $a=\sum_k\hat a_k e^{ik\cdot x}$ (\lean{Fld}). On these fields we use:
 \begin{itemize}
 \item the Lie bracket $[a,b]=(a\cdot\nabla)b-(b\cdot\nabla)a$, mode by mode
@@ -178,7 +203,7 @@ Jacobi fails whenever $\kappa w\ne0$.
 $e^{i(x+y)}$, $z$-component coefficient is $\tfrac{3i}{8}\kappa w\neq0$. So Jacobi fails here too.
 \end{enumerate}
 \end{theorem}
-\LeanRef{jacF_eq_zero, jacT_eq_mixedSum, br_eq_zero_of_xOnly_divFree, shearY_mixed_cancel, shearY_jacobi_holds, not_divFree_uX, shearX_mixed_coeff, shearX_jacobi_fails, shearY_transverse_coeff, shearY_jacobi_fails_transverse}
+\LeanRef{\lean{jacF_eq_zero}, \lean{jacT_eq_mixedSum}, \lean{br_eq_zero_of_xOnly_divFree}, \lean{shearY_mixed_cancel}, \lean{shearY_jacobi_holds}, \lean{not_divFree_uX}, \lean{shearX_mixed_coeff}, \lean{shearX_jacobi_fails}, \lean{shearY_transverse_coeff}, \lean{shearY_jacobi_fails_transverse}}
 \noindent\emph{Scope.} Divergence-freeness is what makes the two shears differ inside the
 $e_x$-directed class. It does not give cancellation on general divergence-free triples, as (e)
 shows, so the tethered bracket is not Poisson even at the divergence-free shear. The witnesses use
@@ -207,7 +232,7 @@ Take the curl. Mixed partials commute on smooth fields, so $\mathrm{curl}\,\nabl
 $\mathrm{curl}\,\Delta=\Delta\,\mathrm{curl}$, and $\partial_t$ commutes with $\mathrm{curl}$. The identity
 $\mathrm{curl}((u\cdot\nabla)u)=(u\cdot\nabla)\omega-(\omega\cdot\nabla)u$ for $\mathrm{div}\,u=0$ is checked componentwise.
 \end{proof}
-\LeanRef{curlOfForcedNS, curl_grad, curl_laplacian, curl_advection, hasDerivAt_pd_time}
+\LeanRef{\lean{curlOfForcedNS}, \lean{curl_grad}, \lean{curl_laplacian}, \lean{curl_advection}, \lean{hasDerivAt_pd_time}}
 
 \begin{theorem}[Biot--Savart on trigonometric polynomials]
 For each nonzero wavevector $k$ and amplitude $a\perp k$, the mode $b=\frac{ik\times a}{|k|^2}e^{ik\cdot x}$
@@ -217,20 +242,20 @@ mode. Summing gives a right inverse of curl on mean-zero divergence-free trigono
 \begin{proof}
 $\mathrm{curl}\,b=\frac{ik\times(ik\times a)}{|k|^2}e^{ik\cdot x}=\frac{-(k\cdot a)k+|k|^2a}{|k|^2}e^{ik\cdot x}=a\,e^{ik\cdot x}$, and $\mathrm{div}\,b\propto k\cdot(k\times a)=0$. Curl is linear over finite sums.
 \end{proof}
-\LeanRef{curlC_bsC, divC_bsC, bsC_unique, curl_bsMode, div_bsMode, curl_bsSum, curlRightInverse_trig}
+\LeanRef{\lean{curlC_bsC}, \lean{divC_bsC}, \lean{bsC_unique}, \lean{curl_bsMode}, \lean{div_bsMode}, \lean{curl_bsSum}, \lean{curlRightInverse_trig}}
 
 \begin{corollary}[Velocity form $\Rightarrow$ vorticity form]
 If $\mathrm{curl}^{-1}$ is a right inverse of curl on the admissible class containing
 $-\kappa P(|\omega|^2\omega)$, then every velocity solution of the tethered NS solves \eqref{eq:tv}.
 \end{corollary}
-\LeanRef{tetheredVorticity_of_velocity, curl_lerayTetherForce}
+\LeanRef{\lean{tetheredVorticity_of_velocity}, \lean{curl_lerayTetherForce}}
 
 \subsection{$L^2$ (enstrophy) bound}
 \begin{lemma}
 If $P$ is a symmetric idempotent and $P\omega=\omega$, then $\ip{\omega}{-\kappa Pg}=-\kappa\ip{\omega}{g}$.
 With $g=|\omega|^2\omega$ this equals $-\kappa\|\omega\|_4^4$.
 \end{lemma}
-\LeanRef{inner_leray_of_divFree, tether_L2_term, inner_cubic}
+\LeanRef{\lean{inner_leray_of_divFree}, \lean{tether_L2_term}, \lean{inner_cubic}}
 \begin{theorem}\label{thm:L2}
 Let $E=\tfrac12\|\omega\|_2^2$ and $Q=\|\omega\|_4^4$. Assume $E'=S-\nu D-\kappa Q$ (Cited Prop.~\ref{cp:EI}),
 $S\le C\sqrt{2E}\sqrt Q$ (Cited Prop.~\ref{cp:CZ}), and $(2E)^2\le Q$ (Cited Prop.~\ref{cp:Holder}). Then for $\kappa>0$,
@@ -242,7 +267,7 @@ $E'\le\frac{C^2}{\kappa}E-2\kappa E^2$ (\lean{enstrophy_deriv_logistic}), so $E'
 A barrier argument (\lean{image_le_of_deriv_right_lt_deriv_boundary'}) with a level $M'$ slightly above the maximum,
 followed by letting $M'\downarrow\max$, gives the bound.
 \end{proof}
-\LeanRef{young_lam, stretch_absorb, enstrophy_deriv_le, enstrophy_deriv_logistic, tethered_enstrophy_uniform, tethered_L2_vorticity_bounded}
+\LeanRef{\lean{young_lam}, \lean{stretch_absorb}, \lean{enstrophy_deriv_le}, \lean{enstrophy_deriv_logistic}, \lean{tethered_enstrophy_uniform}, \lean{tethered_L2_vorticity_bounded}}
 
 \subsection{$H^1$ (palinstrophy) estimate}
 \begin{lemma}[Tether is sign-definite at $H^1$]
@@ -250,7 +275,7 @@ For $\omega\in\mathbb R^3$ and $D=\nabla\omega$,
 $\sum_{ij}D_{ij}\,\partial_j(|\omega|^2\omega_i)=|\omega|^2|D|^2+\tfrac12\sum_j(2\sum_k\omega_kD_{kj})^2\ge0$,
 with no alignment assumption.
 \end{lemma}
-\LeanRef{tether_H1_density_eq, tether_H1_density_nonneg, tether_H1_term}
+\LeanRef{\lean{tether_H1_density_eq}, \lean{tether_H1_density_nonneg}, \lean{tether_H1_term}}
 \begin{theorem}\label{thm:H1}
 Let $G=\|\nabla\omega\|_2^2$, $L=\|\Delta\omega\|_2$. Assume $G'=2(-\nu L^2-\kappa J+N)$ with $J\ge0$
 (Cited Prop.~\ref{cp:H1I}) and $N\le A\,G^{1/4}L^{3/2}$ (Cited Prop.~\ref{cp:NL}). Then
@@ -261,7 +286,7 @@ Drop $-\kappa J\le0$. Young with exponents $(4,4/3)$: $A G^{1/4}L^{3/2}\le\nu L^
 (\lean{young_43}, \lean{amgm_four}). So $G'\le\frac{27A^4}{16\nu^3}G$, and Gr\"onwall
 (\lean{le_gronwallBound_of_liminf_deriv_right_le}) finishes.
 \end{proof}
-\LeanRef{palin_deriv_le, tethered_palinstrophy_gronwall, higherNormControl_tethered}
+\LeanRef{\lean{palin_deriv_le}, \lean{tethered_palinstrophy_gronwall}, \lean{higherNormControl_tethered}}
 
 \subsection{Log-loss comparison and global smoothness}
 At a spatial maximum of $|\omega|$, with $y=\|\omega\|_\infty$, the maximum principle gives a nonpositive
@@ -279,11 +304,11 @@ Higher-norm control is itself discharged by Theorems~\ref{thm:L2} and \ref{thm:H
 Let $\sigma=\sup\{T:\text{smooth on }[0,T]\}$, assuming this set is bounded. On $[0,\sigma)$ the comparison bound gives a uniform
 $\sup y$. BKM continuation then gives smoothness on $[0,\sigma]$, and local continuation extends it past $\sigma$, a contradiction.
 \end{proof}
-\LeanRef{global_regularity_logloss, global_regularity, lemma_3_1_uniform_bound_and_continuation, frohmanian_symplectic_tether_theorem_global}
+\LeanRef{\lean{global_regularity_logloss}, \lean{global_regularity}, \lean{lemma_3_1_uniform_bound_and_continuation}, \lean{frohmanian_symplectic_tether_theorem_global}}
 
 \subsection{Remaining cited propositions (explicit hypotheses, never axioms)}
 Each item below is a \texttt{Prop} hypothesis in Lean. No \texttt{axiom} or \texttt{sorry} is used.
-\begin{hypothesis}[\lean{TetheredEnstrophyIdentity}]\label{cp:EI} Integrated enstrophy identity for \eqref{eq:tv}. It follows from multiplying by $\omega$, integrating by parts on $T^3$, and the lemma above.\end{hypothesis}
+\begin{hypothesis}[\lean{TetheredEnstrophyIdentity}]\label{cp:EI} Integrated enstrophy identity for \eqref{eq:tv}. It follows from multiplying by $\omega$, integrating by parts on $\mathbb{T}^3$, and the lemma above.\end{hypothesis}
 \begin{hypothesis}[\lean{StrainL2Bound}]\label{cp:CZ} $\int\omega\cdot S\omega\le C\|\omega\|_2\|\omega\|_4^2$: Calder\'on--Zygmund / Biot--Savart, classical.\end{hypothesis}
 \begin{hypothesis}[\lean{L4L2Holder}]\label{cp:Holder} $\|\omega\|_2^4\le\|\omega\|_4^4$ on the unit-volume torus (H\"older). \textbf{Now proved} for every probability space with $E=\tfrac12\int g$, $Q=\int g^2$, $g=|\omega|^2\in L^2$ (\lean{l4l2Holder_of_prob}, via nonnegativity of variance).\end{hypothesis}
 \begin{hypothesis}[\lean{TetheredH1Identity}]\label{cp:H1I} The $H^1$ energy identity (Majda--Bertozzi~\cite{MB} \S3.2 for the NS part).\end{hypothesis}
@@ -297,11 +322,11 @@ Each item below is a \texttt{Prop} hypothesis in Lean. No \texttt{axiom} or \tex
 \begin{hypothesis}[\lean{LocalContinuation}]\label{cp:LC} Local existence for smooth periodic data (Fujita--Kato~\cite{FK}, Kato~\cite{Kato}).\end{hypothesis}
 \begin{hypothesis}[\lean{CurlRightInverse} beyond trigonometric polynomials]\label{cp:BS} Proved on trigonometric polynomials. The extension to the smooth admissible class requires a density/continuity argument not yet formalized.\end{hypothesis}
 \paragraph{Why the rest remain hypotheses (what Mathlib lacks, v4.30.0-rc1).}
-\lean{TetheredEnstrophyIdentity} and \lean{TetheredH1Identity} need a solution theory: a time-dependent smooth periodic solution of \eqref{eq:tv}, differentiation under the integral sign over $T^3$, and integration by parts on the torus for vector fields. Mathlib has \texttt{AddCircle} Haar measure and Fourier series, but no PDE solution concept or torus Green's identities.
-\lean{StrainL2Bound} needs the $L^2$ isometry $\|\nabla u\|_2=\|\omega\|_2$ for Biot--Savart (Parseval on $T^3$) and Hölder in $L^4$. Mathlib has Parseval for \texttt{AddCircle} in one variable, but no multivariable torus Sobolev/Biot--Savart theory.
-\lean{NonlinH1Bound} needs Sobolev embedding $H^1\subset L^6$ and Gagliardo--Nirenberg on $T^3$. Neither is in Mathlib.
-\lean{BKMContinuation}, \lean{BKMLogInequality}, \lean{LocalContinuation} and \lean{H1ToHsBootstrap} need Calderón--Zygmund theory, Brezis--Gallouët, and Fujita--Kato local well-posedness. None is in Mathlib, and the tether-specific $H^s$ step is open mathematics.
-The \lean{CurlRightInverse} extension needs density of trigonometric polynomials in the smooth admissible class with $C^\infty$ convergence of Biot--Savart. Mathlib has the $L^2$ density of Fourier modes, not the smooth-topology statement on $T^3$.
+\lean{TetheredEnstrophyIdentity} and \lean{TetheredH1Identity} need a solution theory: a time-dependent smooth periodic solution of \eqref{eq:tv}, differentiation under the integral sign over $\mathbb{T}^3$, and integration by parts on the torus for vector fields. Mathlib has \texttt{AddCircle} Haar measure and Fourier series, but no PDE solution concept or torus Green's identities.
+\lean{StrainL2Bound} needs the $L^2$ isometry $\|\nabla u\|_2=\|\omega\|_2$ for Biot--Savart (Parseval on $\mathbb{T}^3$) and H\"older in $L^4$. Mathlib has Parseval for \texttt{AddCircle} in one variable, but no multivariable torus Sobolev/Biot--Savart theory.
+\lean{NonlinH1Bound} needs Sobolev embedding $H^1\subset L^6$ and Gagliardo--Nirenberg on $\mathbb{T}^3$. Neither is in Mathlib.
+\lean{BKMContinuation}, \lean{BKMLogInequality}, \lean{LocalContinuation} and \lean{H1ToHsBootstrap} need Calder\'on--Zygmund theory, Brezis--Gallou\"et, and Fujita--Kato local well-posedness. None is in Mathlib, and the tether-specific $H^s$ step is open mathematics.
+The \lean{CurlRightInverse} extension needs density of trigonometric polynomials in the smooth admissible class with $C^\infty$ convergence of Biot--Savart. Mathlib has the $L^2$ density of Fourier modes, not the smooth-topology statement on $\mathbb{T}^3$.
 
 \paragraph{Search of the author's own prior work for $H^1\to H^2$.}
 The author's earlier work was searched: unpublished drafts and code from June--October 2026 and the
@@ -313,9 +338,9 @@ tether-specific one. These are cited as the provenance of the plan, not as a pro
 \emph{Provenance.} The comparison ODE $y'=Cy^2-\kappa''y^3$ was introduced by the author, B.~S.~Frohman. It appears in his unpublished draft dated 2026-05-21; its earliest git timestamp is 2026-06-19 in an unpublished repository of the author. Details are in \texttt{paper/publication\_note\_riccati\_provenance.md}. The bound it gives applies only to the tethered comparison ODE below, not to plain Navier--Stokes.
 
 \emph{Plain Riccati.} For $C,y_0>0$, $y(t)=y_0/(1-Cy_0t)$ solves $y'=Cy^2$, $y(0)=y_0$. It exceeds every bound before $T^*=1/(Cy_0)$.
-\LeanRef{ricSol_hasDerivAt, riccati_blowup}
+\LeanRef{\lean{ricSol_hasDerivAt}, \lean{riccati_blowup}}
 \emph{Tethered.} If $y'\le Cy^2-\kappa''y^3$ with $\kappa''>0$ and $y(0)\ge0$, then $y(t)\le\max(y(0),C/\kappa'')$ for all $t$.
-\LeanRef{tethered_ceiling, comparison_bound}
+\LeanRef{\lean{tethered_ceiling}, \lean{comparison_bound}}
 Section~\ref{sec:model} uses the same mechanism at the enstrophy level, $E\le\max(E_0,C^2/(2\kappa^2))$ (\lean{tethered_enstrophy_uniform}).
 Both statements are scalar ODE facts about the tethered model. They say nothing about plain Navier--Stokes.
 
@@ -356,29 +381,31 @@ that \emph{if} such a symmetric, invariant, energy-degenerate correction exists,
 \end{enumerate}
 
 \section*{Claim-to-Lean table}
-Status ``Conditional'' marks results whose Lean statement takes a cited proposition as an explicit hypothesis.
-{\small\begin{longtable}{p{0.3\linewidth}p{0.48\linewidth}l}\hline Claim & Lean declarations & Status\\\hline
-Basic properties & \texttt{frohmanianTether\_symm}, \texttt{frohmanianTether\_self\_nonpos}, \texttt{degeneracy\_verification}, \texttt{frohmanianTether\_invariant}, \texttt{piU\_comm\_isometry} & Proved\\
-Uniqueness up to scale & \texttt{admissible\_eq\_smul\_frohmanianTether}, \texttt{uniqueness\_of\_minimal\_metric\_tether}, \texttt{uniqueness\_of\_minimal\_metric\_tether\_iff} & Proved\\
-Route A determines $\kappa$ & \texttt{routeA\_determines\_kappa}, \texttt{frohmanian\_symplectic\_tether\_theorem}, \texttt{uniqueness\_routeA\_iff}, \texttt{frohmanianTether\_routeA} & Proved\\
-Nine-term Jacobi & \texttt{jacobiator\_eq\_mixed}, \texttt{jacobi\_iff\_mixed\_cancel}, \texttt{mixedTerm\_eq\_zero}, \texttt{jacobiator\_eq\_zero\_of\_central} & Proved\\
-Metriplectic split & \texttt{split\_unique}, \texttt{symPart\_frohmanianTether}, \texttt{antiPart\_frohmanianTether}, \texttt{metriplecticBracket\_split}, \texttt{metriplectic\_energy\_conserved} & Proved\\
-Chevalley--Eilenberg & \texttt{d2\_d1}, \texttt{cocycle\_of\_coboundary}, \texttt{antiCorr\_cocycle\_iff}, \texttt{symPart\_not\_cochain} & Proved\\
-$T^3$ shear & \texttt{shear\_divFree}, \texttt{shearBad\_div}, \texttt{shearBad\_not\_divFree} & Proved\\
-Field-level Jacobi & \texttt{jacF\_eq\_zero}, \texttt{jacT\_eq\_mixedSum}, \texttt{br\_eq\_zero\_of\_xOnly\_divFree}, \texttt{shearY\_mixed\_cancel}, \texttt{shearY\_jacobi\_holds}, \texttt{not\_divFree\_uX}, \texttt{shearX\_mixed\_coeff}, \texttt{shearX\_jacobi\_fails}, \texttt{shearY\_transverse\_coeff}, \texttt{shearY\_jacobi\_fails\_transverse} & Proved\\
-Curl of forced NS & \texttt{curlOfForcedNS}, \texttt{curl\_grad}, \texttt{curl\_laplacian}, \texttt{curl\_advection}, \texttt{hasDerivAt\_pd\_time} & Proved\\
-Biot--Savart on trigonometric polynomials & \texttt{curlC\_bsC}, \texttt{divC\_bsC}, \texttt{bsC\_unique}, \texttt{curl\_bsMode}, \texttt{div\_bsMode}, \texttt{curl\_bsSum}, \texttt{curlRightInverse\_trig} & Proved\\
-Velocity form $\Rightarrow$ vorticity form & \texttt{tetheredVorticity\_of\_velocity}, \texttt{curl\_lerayTetherForce} & Proved\\
-Lemma & \texttt{inner\_leray\_of\_divFree}, \texttt{tether\_L2\_term}, \texttt{inner\_cubic} & Proved\\
-Theorem & \texttt{young\_lam}, \texttt{stretch\_absorb}, \texttt{enstrophy\_deriv\_le}, \texttt{enstrophy\_deriv\_logistic}, \texttt{tethered\_enstrophy\_uniform}, \texttt{tethered\_L2\_vorticity\_bounded} & Conditional\\
-Tether is sign-definite at $H^1$ & \texttt{tether\_H1\_density\_eq}, \texttt{tether\_H1\_density\_nonneg}, \texttt{tether\_H1\_term} & Proved\\
-Theorem & \texttt{palin\_deriv\_le}, \texttt{tethered\_palinstrophy\_gronwall}, \texttt{higherNormControl\_tethered} & Conditional\\
-Global smoothness of the tethered system, conditional & \texttt{global\_regularity\_logloss}, \texttt{global\_regularity}, \texttt{lemma\_3\_1\_uniform\_bound\_and\_continuation}, \texttt{frohmanian\_symplectic\_tether\_theorem\_global} & Conditional\\
-\hline\end{longtable}}
+Labels as in the status legend: \st{Conditional} marks results whose Lean statement takes a cited proposition as an explicit hypothesis; \st{Model only} marks results about the tethered system~\eqref{eq:tv}.
+{\small\begin{longtable}{@{}>{\raggedright}p{0.27\linewidth}>{\raggedright\arraybackslash}p{0.47\linewidth}>{\raggedright\arraybackslash}p{0.18\linewidth}@{}}
+\toprule Claim & Lean declarations & Status\\\midrule\endhead
+\bottomrule\endfoot
+Basic properties & \lean{frohmanianTether_symm}, \lean{frohmanianTether_self_nonpos}, \lean{degeneracy_verification}, \lean{frohmanianTether_invariant}, \lean{piU_comm_isometry} & \st{Proved}\\
+Uniqueness up to scale & \lean{admissible_eq_smul_frohmanianTether}, \lean{uniqueness_of_minimal_metric_tether}, \lean{uniqueness_of_minimal_metric_tether_iff} & \st{Proved}\\
+Route A determines $\kappa$ & \lean{routeA_determines_kappa}, \lean{frohmanian_symplectic_tether_theorem}, \lean{uniqueness_routeA_iff}, \lean{frohmanianTether_routeA} & \st{Proved}\\
+Nine-term Jacobi & \lean{jacobiator_eq_mixed}, \lean{jacobi_iff_mixed_cancel}, \lean{mixedTerm_eq_zero}, \lean{jacobiator_eq_zero_of_central} & \st{Proved}\\
+Metriplectic split & \lean{split_unique}, \lean{symPart_frohmanianTether}, \lean{antiPart_frohmanianTether}, \lean{metriplecticBracket_split}, \lean{metriplectic_energy_conserved} & \st{Proved}\\
+Chevalley--Eilenberg & \lean{d2_d1}, \lean{cocycle_of_coboundary}, \lean{antiCorr_cocycle_iff}, \lean{symPart_not_cochain} & \st{Proved}\\
+$\mathbb{T}^3$ shear & \lean{shear_divFree}, \lean{shearBad_div}, \lean{shearBad_not_divFree} & \st{Proved}\\
+Field-level Jacobi & \lean{jacF_eq_zero}, \lean{jacT_eq_mixedSum}, \lean{br_eq_zero_of_xOnly_divFree}, \lean{shearY_mixed_cancel}, \lean{shearY_jacobi_holds}, \lean{not_divFree_uX}, \lean{shearX_mixed_coeff}, \lean{shearX_jacobi_fails}, \lean{shearY_transverse_coeff}, \lean{shearY_jacobi_fails_transverse} & \st{Proved}\\
+Curl of forced NS & \lean{curlOfForcedNS}, \lean{curl_grad}, \lean{curl_laplacian}, \lean{curl_advection}, \lean{hasDerivAt_pd_time} & \st{Proved}\\
+Biot--Savart on trigonometric polynomials & \lean{curlC_bsC}, \lean{divC_bsC}, \lean{bsC_unique}, \lean{curl_bsMode}, \lean{div_bsMode}, \lean{curl_bsSum}, \lean{curlRightInverse_trig} & \st{Proved}\\
+Velocity form $\Rightarrow$ vorticity form & \lean{tetheredVorticity_of_velocity}, \lean{curl_lerayTetherForce} & \st{Proved}; \st{Model only}\\
+$L^2$ tether term (lemma) & \lean{inner_leray_of_divFree}, \lean{tether_L2_term}, \lean{inner_cubic} & \st{Proved}; \st{Model only}\\
+$L^2$ enstrophy bound & \lean{young_lam}, \lean{stretch_absorb}, \lean{enstrophy_deriv_le}, \lean{enstrophy_deriv_logistic}, \lean{tethered_enstrophy_uniform}, \lean{tethered_L2_vorticity_bounded} & \st{Conditional}; \st{Model only}\\
+Tether is sign-definite at $H^1$ & \lean{tether_H1_density_eq}, \lean{tether_H1_density_nonneg}, \lean{tether_H1_term} & \st{Proved}; \st{Model only}\\
+$H^1$ palinstrophy estimate & \lean{palin_deriv_le}, \lean{tethered_palinstrophy_gronwall}, \lean{higherNormControl_tethered} & \st{Conditional}; \st{Model only}\\
+Global smoothness of the tethered system, conditional & \lean{global_regularity_logloss}, \lean{global_regularity}, \lean{lemma_3_1_uniform_bound_and_continuation}, \lean{frohmanian_symplectic_tether_theorem_global} & \st{Conditional}; \st{Model only}\\
+\end{longtable}}
 \appendix
-\section{Verification certificate}\label{app:verification-certificate}
+\section{Build and axiom audit}\label{app:build-axiom-audit}
 
-The formal development was machine-checked as follows.
+The formal development was built and audited as follows. This is a build and axiom audit, not a certificate.
 
 {\raggedright
 \begin{itemize}
@@ -396,10 +423,9 @@ The tarball hash refers to the verified commit rather than to a release tag, sin
 \textbf{The development contains no \texttt{sorry} and no user-declared axioms.} Every one of the 308 theorems and lemmas listed below depends only on Lean's standard axioms \texttt{propext}, \texttt{Classical.choice} and \texttt{Quot.sound} (or on none). The table is the verbatim output of \texttt{lake env lean AxiomAudit.lean} (\texttt{\#print axioms}) on the verified commit.
 
 {\footnotesize
-\begin{longtable}{p{0.55\linewidth}p{0.38\linewidth}}
-\hline
-Lean declaration & \texttt{\#print axioms} \\
-\hline\endhead
+\begin{longtable}{@{}p{0.6\linewidth}p{0.36\linewidth}@{}}
+\toprule Lean declaration & \texttt{\#print axioms}\\ \midrule\endhead
+\bottomrule\endfoot
 \path{Frohman.Tether.IsAdmissibleCorrection.c1} & \texttt{[propext, Classical.choice, Quot.sound]} \\
 \path{Frohman.Tether.IsAdmissibleCorrection.c2} & \texttt{[propext, Classical.choice, Quot.sound]} \\
 \path{Frohman.Tether.IsAdmissibleCorrection.c3} & \texttt{[propext, Classical.choice, Quot.sound]} \\
@@ -708,7 +734,6 @@ Lean declaration & \texttt{\#print axioms} \\
 \path{Frohman.Tether.VorticityTether.tether_L2_term} & \texttt{[propext, Classical.choice, Quot.sound]} \\
 \path{Frohman.Tether.VorticityTether.tetheredVorticity_of_velocity} & \texttt{[propext, Classical.choice, Quot.sound]} \\
 \path{Frohman.Tether.VorticityTether.tetheredVorticity_zero_iff} & \texttt{[propext, Classical.choice, Quot.sound]} \\
-\hline
 \end{longtable}}
 
 \begin{thebibliography}{9}
