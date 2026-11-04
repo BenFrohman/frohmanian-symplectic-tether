@@ -9,9 +9,9 @@ authors:
   orcid: https://orcid.org/0009-0006-7068-3718
 license: Apache-2.0
 repository-code: https://github.com/BenFrohman/frohmanian-symplectic-tether
-version: v1.0.0
+version: v1.1.0
 date-released: '2026-11-04'
 identifiers:
   - type: doi
-    value: 10.5281/zenodo.23942464
+    value: 10.5281/zenodo.23959183
     description: "Zenodo record of companion.pdf"

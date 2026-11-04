@@ -120,6 +120,6 @@ See [AXIOM_AUDIT.md](AXIOM_AUDIT.md) and the final appendix of `paper/companion.
 
 ## Zenodo: companion
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23942464.svg)](https://doi.org/10.5281/zenodo.23942464)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23959183.svg)](https://doi.org/10.5281/zenodo.23959183)
 
-The paper `paper/companion.pdf` is archived on Zenodo as https://doi.org/10.5281/zenodo.23942464.
+The paper `paper/companion.pdf` (v1.1.0) is archived on Zenodo as https://doi.org/10.5281/zenodo.23959183 (concept DOI, all versions: https://doi.org/10.5281/zenodo.23942463; v1.0.0 was 10.5281/zenodo.23942464).
