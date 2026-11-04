@@ -1,6 +1,6 @@
 # tether-may-form: the Frohmanian Symplectic Tether 𝔗_F and a cubically damped Navier–Stokes model
 
-[![Lean certificate](https://github.com/BenFrohman/frohmanian-symplectic-tether/actions/workflows/certify.yml/badge.svg)](https://github.com/BenFrohman/frohmanian-symplectic-tether/actions/workflows/certify.yml)
+[![Lean build and axiom audit (print-axioms table)](https://github.com/BenFrohman/frohmanian-symplectic-tether/actions/workflows/axiom-table.yml/badge.svg)](https://github.com/BenFrohman/frohmanian-symplectic-tether/actions/workflows/axiom-table.yml)
 
 [![lean.yml](https://github.com/BenFrohman/frohmanian-symplectic-tether/actions/workflows/lean.yml/badge.svg?branch=main)](https://github.com/BenFrohman/frohmanian-symplectic-tether/actions/workflows/lean.yml)
 
@@ -99,7 +99,7 @@ Dates come from the author's own drafts and file metadata; the drafts themselves
 
 **Count method:** top-level declarations beginning with `theorem` or `lemma` in `TetherMayForm/*.lean`:
 `grep -cE "^(private |protected )?(theorem|lemma) " TetherMayForm/*.lean`.
-**137 theorems**, 0 `sorry`, axioms only `propext`, `Classical.choice`, `Quot.sound`. (Earlier counts in commit messages, 96–127, used looser methods and are superseded.)
+**285 source-level theorems/lemmas** by this method; `AxiomAudit.lean` prints axioms for **308** named declarations, and `AxiomReport.lean` (see `AXIOMS.md`) covers all **382** theorem constants of the library, including compiler-generated equation and injectivity lemmas. 0 `sorry`; axioms only `propext`, `Classical.choice`, `Quot.sound` (or none). (The earlier figure of 137 and the counts 96–127 in commit messages are stale and superseded.)
 
 ## License
 Apache-2.0 (`LICENSE`), with `NOTICE`. Grok assisted; it is not an author.
@@ -113,9 +113,9 @@ What is proved vs. conditional: Proved results and their hypotheses are listed i
 
 **PDF note:** the PDFs were rebuilt from the `.tex` sources with Tectonic 0.17.0 on 2026-11-02.
 
-## Verification certificate
+## Build and axiom audit
 
-See [CERTIFICATE.md](CERTIFICATE.md) and the paper in `paper/companion.pdf`.
+See [AXIOM_AUDIT.md](AXIOM_AUDIT.md) and the final appendix of `paper/companion.pdf`. This is a build and axiom audit, not a certificate.
 
 
 ## Zenodo: companion

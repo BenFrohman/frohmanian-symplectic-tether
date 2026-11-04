@@ -1,9 +1,11 @@
-# Verification certificate — frohmanian-symplectic-tether v1.0.0
+# Build and axiom audit — frohmanian-symplectic-tether v1.0.0
 
-Paper: [The Frohmanian Symplectic Tether T: Written Proofs Companion to the Lean 4 Formalization](paper/companion.pdf)  
+This is a build and axiom audit, not a certificate or peer review.
+
+Paper: [The Frohmanian Symplectic Tether 𝔗_F: Written Proofs Companion to the Lean 4 Formalization](paper/companion.pdf)  
 Author: Benjamin Stanley Frohman <frohmanbenjamin@gmail.com>
 
-- `lake build`: succeeds (enforced by `.github/workflows/certify.yml` and `lean.yml`).
+- `lake build`: succeeds (enforced by `.github/workflows/axiom-table.yml` and `lean.yml`).
 - `sorry` / `admit`: none (`scripts/check_no_sorry.py`).
 - `native_decide`: none.
 - User `axiom` declarations: none.
