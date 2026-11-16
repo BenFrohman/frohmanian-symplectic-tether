@@ -4,6 +4,10 @@
 
 [![lean.yml](https://github.com/BenFrohman/frohmanian-symplectic-tether/actions/workflows/lean.yml/badge.svg?branch=main)](https://github.com/BenFrohman/frohmanian-symplectic-tether/actions/workflows/lean.yml)
 
+## Kernel certificate
+
+[certificates/CERTIFICATE.md](certificates/CERTIFICATE.md): commit `8bbc8b9`, `leanprover/lean4:v4.30.0-rc1`. `lake build` passes; the sorry/axiom scan finds 0 hits; **382 theorems depend only on `propext`, `Classical.choice`, `Quot.sound`**; 24 of 24 modules replayed through the kernel, 0 failures ([CI run](https://github.com/BenFrohman/frohmanian-symplectic-tether/actions/runs/43937889337)).
+
 **Author:** Benjamin Stanley Frohman (ORCID 0009-0006-7068-3718), <frohmanbenjamin@gmail.com>. Prepared with assistance from Grok, which is not a co-author.
 **Status:** research code; not peer reviewed. Lean `v4.30.0-rc1`, Mathlib `v4.30.0-rc1`.
 
