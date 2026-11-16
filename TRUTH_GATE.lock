@@ -1,0 +1,17 @@
+{
+  "semantics_file": "TetherMayForm/Semantics.lean",
+  "semantics_module": "TetherMayForm.Semantics",
+  "paper_path": "paper/companion.tex",
+  "paper_sha256": "654600ab8768c7cf386145180b3352a4434e70708817010af103e705084afdf1",
+  "main_theorems": [
+    "Frohman.Tether.routeA_determines_kappa_of_matching"
+  ],
+  "lock_region_sha256": "38413bc91cd7be3cde904076f95b59aa1121f291d00bf00b3f85b371ab5d1108",
+  "draft_dirs": [
+    "TetherMayForm/Draft"
+  ],
+  "lean_roots": [
+    "TetherMayForm",
+    "TetherMayForm.lean"
+  ]
+}
