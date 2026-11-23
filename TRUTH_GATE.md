@@ -140,7 +140,7 @@ python3 -m unittest discover -s scripts/tests -p 'test_truth_gate_classify.py' -
 ## The locked claim of this repository
 
 * Paper: `paper/companion.tex`
-* sha256: `fa64e9f1bd99754e53879ec9ae5149e92b772761bc14bdfb63d49a410d97c4fc`
+* sha256: `9f204a0f1c28df1c6e477ffcb75c37473fea16ceaa9682950a1ecac72c67f4f4`
 * Section: Section "Result 1: geometric uniqueness" (sec:geom), standing assumptions, Definition def:routeA and Theorem thm:routeA, all three sentences
 * Main theorem(s): `Frohman.Tether.routeA_determines_kappa_of_matching`, `Frohman.Tether.routeA_admissible_iff`
 * Lock file: `TRUTH_GATE.lock`; semantics: `TetherMayForm/Semantics.lean`

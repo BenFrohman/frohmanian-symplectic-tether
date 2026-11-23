@@ -10,7 +10,7 @@ import TetherMayForm.Main
 # Truth Gate: semantics lock (see `TRUTH_GATE.md`)
 
 PAPER_PATH: paper/companion.tex
-PAPER_SHA256: fa64e9f1bd99754e53879ec9ae5149e92b772761bc14bdfb63d49a410d97c4fc
+PAPER_SHA256: 9f204a0f1c28df1c6e477ffcb75c37473fea16ceaa9682950a1ecac72c67f4f4
 PAPER_SECTION: Section "Result 1: geometric uniqueness" (sec:geom), standing assumptions, Definition def:routeA and Theorem thm:routeA ("Route A determines κ"), all three sentences
 
 Standing assumptions of the section, quoted verbatim:
