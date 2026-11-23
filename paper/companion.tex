@@ -25,8 +25,8 @@
 \newcommand{\st}[1]{{\upshape\textsf{#1}}}
 \newcommand{\LeanRef}[1]{\par\noindent{\raggedright\small\emph{Lean:} #1.\par}}
 \title{The Frohmanian Symplectic Tether $\T$:\\ Written Proofs Companion to the Lean~4 Formalization}
-\author{Benjamin Stanley Frohman\\ \small\href{mailto:frohmanbenjamin@gmail.com}{frohmanbenjamin@gmail.com}\\ \small ORCID \href{https://orcid.org/0009-0006-7068-3718}{0009-0006-7068-3718}}
-\date{October 29, 2026; revised November 1, 2026. Not peer reviewed.}
+\author{Benjamin Stanley Frohman\\ Independent Researcher, Texas, United States\\ \small\href{mailto:frohmanbenjamin@gmail.com}{frohmanbenjamin@gmail.com}\\ \small ORCID \href{https://orcid.org/0009-0006-7068-3718}{0009-0006-7068-3718}}
+\date{October 29, 2026; revised 23 November 2026. Not peer reviewed.}
 \begin{document}
 \maketitle
 \begin{abstract}
@@ -44,7 +44,7 @@ smoothness, \emph{conditional on cited propositions that are listed explicitly}.
 (Section~\ref{sec:open}).
 \emph{Build status:} \texttt{lake build} of the full \texttt{TetherMayForm} library succeeds, and the axiom report
 (\texttt{AxiomAudit.lean}, run in CI; see the final appendix) checks 308 named theorem declarations, and the
-full report (\texttt{AxiomReport.lean}) covers all 382 theorems of the library; none uses \texttt{sorryAx}
+full report (\texttt{AxiomReport.lean}) covers all 385 theorems of the library; none uses \texttt{sorryAx}
 and none uses an axiom beyond \texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}. ``Proved'' below
 means kernel-checked in that sense; ``conditional'' means the result takes a named \texttt{Prop} hypothesis
 that is not proved here; ``model only'' means the result concerns the modified (tethered) system,
@@ -85,20 +85,19 @@ $\T[\kappa,w,u](F,G):=-(\kappa w)\ip{\Pi_uF}{\Pi_uG}$. \LeanRef{\lean{Frohman.Te
 \end{definition}
 
 \begin{lemma}[Basic properties]
-(a) $\T$ is symmetric. (b) $\T(F,F)\le0$ whenever $\kappa w\ge0$. (c) It is degenerate with respect to the
-kinetic-energy gradient: $\T(F,u)=0$ for all $F$. (d) It is invariant under every isometry
-commuting with $\Pi_u$.
+(a) $\T$ is symmetric. (b) $\T(F,F)\le0$ whenever $\kappa w\ge0$ (\lean{frohmanianTether_self_nonpos_of_mul_nonneg}; the earlier \lean{frohmanianTether_self_nonpos} assumes the stronger $\kappa\ge0$ and $w\ge0$). (c) It is degenerate with respect to the
+kinetic-energy gradient: $\T(F,u)=0$ for all $F$. (d) It is invariant under every linear isometry that fixes $u$ (such an isometry commutes with $\Pi_u$). Lean proves invariance for this class, not for an arbitrary isometry that merely commutes with $\Pi_u$.
 \end{lemma}
 \begin{proof}
 (a) is symmetry of the inner product. (b) gives $-\kappa w\|\Pi_uF\|^2$. (c) holds because $\Pi_uu=0$.
-(d) If $A$ is an isometry with $A\Pi_u=\Pi_uA$, then $\ip{\Pi_uAF}{\Pi_uAG}=\ip{A\Pi_uF}{A\Pi_uG}=\ip{\Pi_uF}{\Pi_uG}$.
+(d) If $A$ is a linear isometry with $Au=u$, then $A\Pi_u=\Pi_uA$, so $\ip{\Pi_uAF}{\Pi_uAG}=\ip{A\Pi_uF}{A\Pi_uG}=\ip{\Pi_uF}{\Pi_uG}$.
 \end{proof}
-\LeanRef{\lean{frohmanianTether_symm}, \lean{frohmanianTether_self_nonpos}, \lean{degeneracy_verification}, \lean{frohmanianTether_invariant}, \lean{piU_comm_isometry}}
+\LeanRef{\lean{frohmanianTether_symm}, \lean{frohmanianTether_self_nonpos}, \lean{frohmanianTether_self_nonpos_of_mul_nonneg}, \lean{degeneracy_verification}, \lean{frohmanianTether_invariant}, \lean{piU_comm_isometry}}
 
 \begin{theorem}[Uniqueness up to scale]\label{thm:unique}
-Let $B$ be a symmetric bilinear form that is (C1) invariant under the coadjoint isometries fixing
-$u$ and (C2) degenerate with respect to $u$. Then $B=\T[c,1,u]$ for some $c\in\mathbb R$.
-If, in addition, (C3) fixes the coefficient ($C3(\T[c,1,u])\Rightarrow c=\kappa w$), then $B=\T[\kappa,w,u]$.
+In a finite-dimensional real inner-product space of dimension at least $3$, with $u\neq0$, let $B$ be a symmetric bilinear form that is (C1) invariant under the coadjoint isometries fixing
+$u$ and (C2) degenerate with respect to $u$. Then $B=\T[c,1,u]$ for some $c\in\mathbb R$ (\lean{admissible_eq_smul_frohmanianTether}).
+If, in addition, (C3) fixes the coefficient ($C3(\T[c,1,u])\Rightarrow c=\kappa w$), then $B=\T[\kappa,w,u]$ (\lean{uniqueness_of_minimal_metric_tether}). The result is not proved in infinite dimension, and not proved for an arbitrary $C3$ that does not fix the coefficient.
 \end{theorem}
 \begin{proof}
 (C2) and symmetry give $B(x,y)=B(\Pi_ux,\Pi_uy)$ (\lean{degeneracy_forces_projection}).
@@ -119,17 +118,31 @@ theorem uniqueness_of_minimal_metric_tether [FiniteDimensional $\mathbb{R}$ H]
     B = $\mathfrak{T}$_F[$\kappa$, w, u]
 \end{lstlisting}
 
+\begin{definition}[Admissible for Route~A]\label{def:routeA}
+Let $\omega\perp u$ with $\|\omega\|=1$, and let $S,w\in\mathbb R$. A bilinear form $B$ on $H$ is a
+\emph{correction admissible for Route~A} if all of the following hold:
+$B(F,G)=B(G,F)$ for all $F,G$;
+(C1) $B(gF,gG)=B(F,G)$ for all $F,G$ and every linear isometry $g$ of $H$ onto $H$ with $gu=u$;
+(C2) $B(F,u)=0$ for all $F$;
+(C3-A) $B(F,F)\le0$ for all $F$, $B(\omega,\omega)+Sw=0$, and $\tfrac12\bigl(B(F,G)-B(G,F)\bigr)=0$ for all $F,G\perp u$.
+\end{definition}
+\LeanRef{\lean{IsAdmissibleCorrection}, \lean{RouteAFeedback}}
+
 \begin{theorem}[Route A determines $\kappa$]\label{thm:routeA}
 Let $\omega\perp u$, $\|\omega\|=1$, $w\neq0$. Suppose $\T[\kappa,w,u]$ matches the stretching
 coefficient $S$ in the sense $\T[\kappa,w,u](\omega,\omega)+S w=0$. Then $\kappa=S$.
-Consequently, in $\dim\ge3$ with $S\ge0$, $w>0$, a correction is admissible for Route~A iff
-$B=\T[\kappa,w,u]$ with $\kappa=S$.
+Consequently, in $\dim\ge3$ with $S\ge0$, $w>0$, and $\omega$ as above, a bilinear form $B$ is a
+correction admissible for Route~A (Definition~\ref{def:routeA}) iff $B=\T[\kappa,w,u]$ with $\kappa=S$.
 \end{theorem}
 \begin{proof}
 Since $\omega\perp u$, $\Pi_u\omega=\omega$, so $\T(\omega,\omega)=-\kappa w\|\omega\|^2=-\kappa w$. The matching gives
-$(S-\kappa)w=0$, and $w\ne0$ yields $\kappa=S$. Here $\kappa$ is a free parameter; specific values used in earlier drafts ($\kappa=1$, $\kappa=3/2$) are modelling/normalization choices, not derived constants, and $S$ is supplied, not derived. The open statement of the programme is the Frohmanian Tether Hypothesis (A)/(B) (see \texttt{NAMING.md}); it is not proved here. The equivalence combines this with Theorem~\ref{thm:unique}.
+$(S-\kappa)w=0$, and $w\ne0$ yields $\kappa=S$. Here $\kappa$ is a free parameter; specific values used in earlier drafts ($\kappa=1$, $\kappa=3/2$) are modelling/normalization choices, not derived constants, and $S$ is supplied, not derived. The open statement of the programme is the Frohmanian Tether Hypothesis (A)/(B) (see \texttt{NAMING.md}); it is not proved here. For the equivalence, let $B$ be admissible for Route~A. The argument of Theorem~\ref{thm:unique}, run
+with $e_0=\omega$ (so no finite dimension is needed: the only isometries used are reflections fixing $u$),
+gives $B=\T[c,1,u]$ with $c=-B(\omega,\omega)$; the matching condition gives $c=Sw$, so $B=\T[S,w,u]$.
+Conversely, $\T[S,w,u]$ is symmetric and satisfies (C1) and (C2) by the Lemma above; (C3-A) holds because
+$\T(F,F)=-Sw\|\Pi_uF\|^2\le0$ for $S\ge0$, $w>0$, $\T(\omega,\omega)=-Sw$, and $\T$ is symmetric.
 \end{proof}
-\LeanRef{\lean{routeA_determines_kappa}, \lean{frohmanian_symplectic_tether_theorem}, \lean{uniqueness_routeA_iff}, \lean{frohmanianTether_routeA}}
+\LeanRef{\lean{routeA_determines_kappa_of_matching}, \lean{routeA_admissible_iff}, \lean{admissible_eq_frohmanianTether_of_unit}, \lean{routeA_determines_kappa}, \lean{frohmanian_symplectic_tether_theorem}, \lean{uniqueness_routeA_iff}, \lean{frohmanianTether_routeA}}
 
 \begin{theorem}[Nine-term Jacobi]\label{thm:jacobi}
 For a classical (Jacobi) bracket $P$ and the tethered bracket $P+\T$, the Jacobiator expands into
